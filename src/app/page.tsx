@@ -1,23 +1,22 @@
 // src/app/page.tsx
-import Image from "next/image";
-import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { 
-  GraduationCap, 
-  Users, 
-  Calendar, 
-  FileText, 
-  BookOpen, 
-  Shield, 
+import {
+  ArrowRight,
+  BarChart3,
+  BookOpen,
+  Calendar,
   Clock,
+  FileText,
+  GraduationCap,
+  Shield,
+  Sparkles,
   User,
   UserPlus,
-  BarChart3,
-  ArrowRight,
-  Sparkles
+  Users
 } from 'lucide-react';
+import Link from "next/link";
 
 export default function HomePage() {
   const currentYear = new Date().getFullYear();

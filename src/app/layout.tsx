@@ -1,8 +1,8 @@
 // src/app/layout.tsx
+import { AuthProvider } from "@/context/AuthContext"; // AuthProvider ko import karein
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/context/AuthContext"; // AuthProvider ko import karein
 
 const inter = Inter({ subsets: ["latin"] });
 

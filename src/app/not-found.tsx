@@ -1,10 +1,10 @@
 // File: src/app/under-process.tsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Home, ArrowLeft, Search, Wrench, Construction } from 'lucide-react';
+import { ArrowLeft, Construction, Home, Search, Wrench } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function UnderProcess() {
   const [isLoaded, setIsLoaded] = useState(false);
