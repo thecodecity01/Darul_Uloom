@@ -1,7 +1,7 @@
 // src/app/(auth)/login/page.tsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { auth, getUserProfile } from '@/lib/firebase';
 import { signInWithEmailAndPassword, User as FirebaseUserType } from 'firebase/auth';
@@ -24,7 +24,8 @@ export interface UserProfile {
   photoURL?: string;
 }
 
-export default function LoginPage() {
+// Login form component that uses useSearchParams
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -235,5 +236,50 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading fallback component
+function LoginPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+      <div className="relative w-full max-w-md">
+        <Card className="bg-white/80 backdrop-blur-sm dark:bg-gray-800/80 shadow-xl border-0 dark:border-gray-700">
+          <CardHeader className="text-center space-y-4 pb-8">
+            <div className="flex justify-center">
+              <div className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full">
+                <GraduationCap className="h-8 w-8 text-white" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-11 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </div>
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-11 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </div>
+              <div className="h-11 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// Main component with Suspense wrapper
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginPageSkeleton />}>
+      <LoginForm />
+    </Suspense>
   );
 }
