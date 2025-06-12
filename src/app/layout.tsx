@@ -7,7 +7,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Darul Uloom Saiyed Ali Sarkar", // Title update kar sakte hain
+  title: "Darul Uloom Shaikh Ahmed Khattu", // Title update kar sakte hain
   description: "Student & Attendance Management System",
    icons: {
     icon: '/icon.png', // Main favicon
