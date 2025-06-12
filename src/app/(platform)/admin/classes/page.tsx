@@ -1,11 +1,11 @@
 // src/app/(platform)/admin/classes/page.tsx
 "use client";
 
-import React, { useEffect, useState, FormEvent } from 'react';
+import React, { useEffect, useState, FormEvent, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { collection, query, getDocs, orderBy, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
 import { ClassData } from '@/types/class';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -68,14 +68,15 @@ export default function ManageClassesPage() {
   // Delete Class State
   const [isDeletingClass, setIsDeletingClass] = useState<string | null>(null);
 
-  // Fetch classes
-  const fetchClasses = async () => {
+  // Fetch classes - Updated with useCallback and proper timestamp handling
+  const fetchClasses = useCallback(async () => {
     if (!userProfile || !user || userProfile.role !== 'super_admin') return;
     setIsLoadingClasses(true);
     setErrorClasses(null);
     try {
       const classesQuery = query(collection(db, "classes"), orderBy("createdAt", "desc"));
       const querySnapshot = await getDocs(classesQuery);
+      
       const classesList = querySnapshot.docs.map(doc => {
         const data = doc.data();
         return {
@@ -83,16 +84,18 @@ export default function ManageClassesPage() {
           name: data.name,
           description: data.description,
           academicYear: data.academicYear,
-          createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toLocaleDateString() : 'N/A',
-          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toLocaleDateString() : 'N/A'
+          // Fixed timestamp handling for deployment
+          createdAt: data.createdAt, // Keep as Timestamp object
+          updatedAt: data.updatedAt, // Keep as Timestamp object
         } as ClassData;
       });
+
       setClasses(classesList);
     } catch (err: any) {
       setErrorClasses("Failed to load classes. " + err.message);
     }
     setIsLoadingClasses(false);
-  };
+  }, [user, userProfile]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -102,7 +105,7 @@ export default function ManageClassesPage() {
       return;
     }
     fetchClasses();
-  }, [user, userProfile, authLoading, router]);
+  }, [user, userProfile, authLoading, router, fetchClasses]);
 
   // Form handlers
   const handleAddClassSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -201,13 +204,25 @@ export default function ManageClassesPage() {
     router.push('/login');
   };
 
+  // Helper function to safely format timestamps
+  const formatTimestamp = (timestamp: any): string => {
+    if (!timestamp) return 'N/A';
+    if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+      return timestamp.toDate().toLocaleDateString();
+    }
+    if (timestamp instanceof Date) {
+      return timestamp.toLocaleDateString();
+    }
+    return 'N/A';
+  };
+
   const exportToExcel = () => {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(classes.map(cls => ({
       'Class Name': cls.name,
       'Description': cls.description || '',
       'Academic Year': cls.academicYear || '',
-      'Created At': cls.createdAt
+      'Created At': formatTimestamp(cls.createdAt)
     })));
     XLSX.utils.book_append_sheet(wb, ws, "Classes");
     XLSX.writeFile(wb, "classes.xlsx");
@@ -221,7 +236,7 @@ export default function ManageClassesPage() {
       cls.name,
       cls.description || '',
       cls.academicYear || '',
-      cls.createdAt
+      formatTimestamp(cls.createdAt)
     ]);
 
     autoTable(doc, {
@@ -349,7 +364,8 @@ export default function ManageClassesPage() {
                 {classes.filter(c => {
                   const today = new Date();
                   const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                  return c.createdAt && new Date(c.createdAt) > weekAgo;
+                  const createdDate = c.createdAt && c.createdAt.toDate ? c.createdAt.toDate() : null;
+                  return createdDate && createdDate > weekAgo;
                 }).length}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -639,12 +655,12 @@ export default function ManageClassesPage() {
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-muted-foreground">
-                            {cls.createdAt}
+                            {formatTimestamp(cls.createdAt)}
                           </span>
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-muted-foreground">
-                            {cls.updatedAt}
+                            {formatTimestamp(cls.updatedAt)}
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
