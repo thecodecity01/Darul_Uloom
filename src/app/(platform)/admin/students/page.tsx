@@ -206,7 +206,7 @@ export default function ManageStudentsPage() {
     setIsUpdatingStudent(true);
     try {
       const studentDocRef = doc(db, "students", editingStudent.id);
-      const studentDataToUpdate: Partial<Omit<StudentData, 'id' | 'className' | 'createdAt'>> & {updatedAt: any} = {
+      const studentDataToUpdate = {
         name: editStudentName.trim(), 
         classId: editSelectedClassId,
         guardianName: editGuardianName.trim() || undefined,
@@ -285,7 +285,7 @@ export default function ManageStudentsPage() {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Authentication Error: {authError}
+            Authentication Error: {authError?.toString()}
           </AlertDescription>
         </Alert>
       </div>
@@ -381,7 +381,15 @@ export default function ManageStudentsPage() {
                 {students.filter(s => {
                   const today = new Date();
                   const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                  return s.createdAt && new Date(s.createdAt) > weekAgo;
+                  let createdDate: Date | null = null;
+                  if (s.createdAt) {
+                    if (typeof s.createdAt === 'string' || s.createdAt instanceof Date) {
+                      createdDate = new Date(s.createdAt);
+                    } else if (typeof s.createdAt === 'object' && typeof (s.createdAt as any).toDate === 'function') {
+                      createdDate = (s.createdAt as any).toDate();
+                    }
+                  }
+                  return createdDate && createdDate > weekAgo;
                 }).length}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -752,16 +760,28 @@ export default function ManageStudentsPage() {
                             {student.dateOfBirth ? 
                               (typeof student.dateOfBirth === 'string' ? 
                                 new Date(student.dateOfBirth).toLocaleDateString() : 
-                                student.dateOfBirth.toDate ? 
-                                  student.dateOfBirth.toDate().toLocaleDateString() : 
-                                  'Invalid date'
+                                (student.dateOfBirth instanceof Date
+                                  ? student.dateOfBirth.toLocaleDateString()
+                                  : typeof student.dateOfBirth.toDate === 'function'
+                                    ? student.dateOfBirth.toDate().toLocaleDateString()
+                                    : 'Invalid date'
+                                )
                               ) : 'Not provided'
                             }
                           </span>
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-muted-foreground">
-                            {student.createdAt}
+                            {student.createdAt
+                              ? typeof student.createdAt === 'string'
+                                ? student.createdAt
+                                : student.createdAt instanceof Date
+                                  ? student.createdAt.toLocaleDateString()
+                                  : typeof (student.createdAt as any).toDate === 'function'
+                                    ? (student.createdAt as any).toDate().toLocaleDateString()
+                                    : 'N/A'
+                              : 'N/A'
+                            }
                           </span>
                         </TableCell>
                         <TableCell className="text-right">

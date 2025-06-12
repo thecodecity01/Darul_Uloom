@@ -3,6 +3,7 @@
 import { Timestamp } from 'firebase/firestore';
 
 export interface ClassData {
+  updatedAt(updatedAt: any): import("react").ReactNode;
   id: string;
   name: string;
   description?: string;

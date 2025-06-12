@@ -76,7 +76,14 @@ export default function AttendanceReportPage() {
           // Fetch Teachers
           const teachersQuery = query(collection(db, "users"), where("role", "==", "teacher"), orderBy("name", "asc"));
           const teachersSnapshot = await getDocs(teachersQuery);
-          const teachersList = teachersSnapshot.docs.map(doc => ({ uid: doc.id, id: doc.id, name: doc.data().name, ...doc.data() } as UserProfile));
+          const teachersList = teachersSnapshot.docs.map(doc => ({
+            uid: doc.id,
+            id: doc.id,
+            name: doc.data().name,
+            email: doc.data().email,
+            role: doc.data().role,
+            ...doc.data()
+          } as UserProfile));
           setAvailableTeachers(teachersList);
 
         } catch (err: any) {
@@ -209,7 +216,7 @@ export default function AttendanceReportPage() {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Authentication Error: {authError}
+            Authentication Error: {typeof authError === "string" ? authError : authError?.message || authError?.toString()}
           </AlertDescription>
         </Alert>
       </div>

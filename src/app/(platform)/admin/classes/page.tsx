@@ -266,7 +266,7 @@ export default function ManageClassesPage() {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Authentication Error: {authError}
+            Authentication Error: {typeof authError === "string" ? authError : authError?.message || authError?.toString?.() || "Unknown error"}
           </AlertDescription>
         </Alert>
       </div>
